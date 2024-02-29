@@ -4,8 +4,8 @@ Vue.component('kanban',{
             <h1>KABAN TABLE</h1>
             <create-task-form @task-created="createTask"></create-task-form>
             <div class="columns">
-                <column title="Planned tasks" :tasks="plannedTasks"></column>
-<!--                <column></column>-->
+                <column title="Planned tasks" :tasks="plannedTasks" @task-moved="moveTask"></column>
+                <column title="Tasks in progress" :tasks='inProgressTasks'></column>
 <!--                <column></column>-->
 <!--                <column></column>-->
             </div>
@@ -13,7 +13,8 @@ Vue.component('kanban',{
     `,
     data(){
         return{
-            plannedTasks: []
+            plannedTasks: [],
+            inProgressTasks:[]
         }
     },
     methods:{
@@ -82,8 +83,16 @@ Vue.component('task-card', {
             <p>{{ task.description }}</p>
             <p>Deadline: {{ task.deadline }}</p>
             <p>Last change: {{ task.lastEdited }}</p>
+            <button @click="moveToNextColumn">Move to next column</button>
         </div>
-    `
+    `,methods:{
+        moveToNextColumn(){
+            this.$emit('move', {task: this.task, targetColumn: getNextColumn(this.task.column)})
+        }
+    },
+    getNextColumn(currentColumn){
+
+    }
 })
 
 let app = new Vue({
