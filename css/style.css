@@ -4,3 +4,19 @@
     gap: 1em;
     width: 10em;
 }
+.app{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.task-form{
+    background-color: #EBCFB2;
+    border-radius: 5%;
+    padding: 0.25em;
+}
+.task-card{
+    width: 25em;
+    background-color: #C5BAAF;
+    border-radius: 2%;
+    padding: 0.25em;
+}
