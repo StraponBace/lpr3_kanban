@@ -5,8 +5,8 @@ Vue.component('kanban', {
             <create-task-form @task-created="createTask"></create-task-form>
             <div class="columns">
                 <column title="Planned tasks" :tasks="plannedTasks" @task-moved="moveTask" @task-delete="deleteTask"></column>
-                <column title="Tasks in progress" :tasks='inProgressTasks' @task-moved="moveTask"></column>
-                <column title="Task in testing" :tasks="testingTasks" @task-moved="moveTask"></column>
+                <column title="Tasks in progress" :tasks='inProgressTasks' @task-moved="moveTask" @task-edit="editTask"></column>
+                <column title="Task in testing" :tasks="testingTasks" @task-moved="moveTask" @task-edit="editTask"></column>
                 <column title="Completed Task" :tasks="completedTasks" @task-returned="returnTask"></column>
             </div>
         </div>
@@ -36,7 +36,12 @@ Vue.component('kanban', {
             if (index !== -1) {
                 this[task.column].splice(index, 1);
             }
-        }
+        },
+        editTask({task, targetColumn}){
+            this[task.column].splice(this[task.column].indexOf(task), 1);
+            this[targetColumn].push({...task, column: targetColumn, lastEdited: new Date()});
+        },
+
 
     }
 })
@@ -84,7 +89,7 @@ Vue.component('column', {
             <div class="column">
                 <h2>{{ title }}</h2>
                 <div class="tasks">
-                    <task-card v-for="task in tasks" :key="task.id" :task="task" @move="moveTask" @return="returnTask" @delete="deleteTask"></task-card>
+                    <task-card v-for="task in tasks" :key="task.id" :task="task" @move="moveTask" @return="returnTask" @delete="deleteTask" @edit='editTask'></task-card>
                 </div>
             </div>
         </div>
@@ -98,6 +103,9 @@ Vue.component('column', {
         },
         deleteTask(task){
             this.$emit('task-delete', task);
+        },
+        editTask(newColumn){
+            this.$emit('task-edit', {task: newColumn.task, targetColumn: newColumn.targetColumn})
         }
     }
 
@@ -121,11 +129,12 @@ Vue.component('task-card', {
         moveToNextColumn() {
             this.$emit('move', {task: this.task, targetColumn: getNextColumn(this.task.column)})
         },
-        // editTask(){
-        //     this.task.title = 'New title'
-        //     this.task.description = 'New description'
-        //     this.task.lastEdited = new Date();
-        // },
+        editTask(){
+            this.task.title = 'New title'
+            this.task.description = 'New description'
+            this.task.lastEdited = new Date();
+            this.$emit('back-to-progress', {task: this.task, targetColumn: backToProgress(this.task.column)})
+        },
         returnTaskToFirstColumn(){
             this.$emit('return', {task: this.task, targetColumn: returnInFirstColumn(this.task.column)})
         },
@@ -164,6 +173,13 @@ function returnInFirstColumn(currentColumn){
     switch (currentColumn){
         case 'completedTasks':
             return 'plannedTasks';
+    }
+}
+
+function backToProgress(currentColumn){
+    switch (currentColumn){
+        case 'testingTasks':
+            return 'inProgressTasks';
     }
 }
 
