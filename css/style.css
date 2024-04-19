@@ -20,3 +20,13 @@
     border-radius: 2%;
     padding: 0.25em;
 }
+.columns{
+    display: flex;
+    justify-content: space-between;
+    width: 95vw;
+}
+.tasks{
+    gap: 1em;
+    display: flex;
+    flex-direction: column;
+}
