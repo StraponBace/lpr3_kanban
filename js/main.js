@@ -5,9 +5,9 @@ Vue.component('kanban', {
             <create-task-form @task-created="createTask"></create-task-form>
             <div class="columns">
                 <column title="Planned tasks" :tasks="plannedTasks" @task-moved="moveTask" @task-delete="deleteTask"></column>
-                <column title="Tasks in progress" :tasks='inProgressTasks' @task-moved="moveTask" @task-edit="editTask"></column>
-                <column title="Task in testing" :tasks="testingTasks" @task-moved="moveTask" @task-edit="editTask"></column>
-                <column title="Completed Task" :tasks="completedTasks" @task-returned="returnTask"></column>
+                <column title="Tasks in progress" :tasks='inProgressTasks' @task-moved="moveTask"></column>
+                <column title="Task in testing" :tasks="testingTasks" @task-moved="moveTask" @task-returned="returnTask"></column>
+                <column title="Completed Task" :tasks="completedTasks"></column>
             </div>
         </div>
     `,
@@ -36,12 +36,7 @@ Vue.component('kanban', {
             if (index !== -1) {
                 this[task.column].splice(index, 1);
             }
-        },
-        editTask({task, targetColumn}){
-            this[task.column].splice(this[task.column].indexOf(task), 1);
-            this[targetColumn].push({...task, column: targetColumn, lastEdited: new Date()});
-        },
-
+        }
 
     }
 })
@@ -89,7 +84,7 @@ Vue.component('column', {
             <div class="column">
                 <h2>{{ title }}</h2>
                 <div class="tasks">
-                    <task-card v-for="task in tasks" :key="task.id" :task="task" @move="moveTask" @return="returnTask" @delete="deleteTask" @edit='editTask'></task-card>
+                    <task-card v-for="task in tasks" :key="task.id" :task="task" @move="moveTask" @return="returnTask" @delete="deleteTask"></task-card>
                 </div>
             </div>
         </div>
@@ -103,9 +98,6 @@ Vue.component('column', {
         },
         deleteTask(task){
             this.$emit('task-delete', task);
-        },
-        editTask(newColumn){
-            this.$emit('task-edit', {task: newColumn.task, targetColumn: newColumn.targetColumn})
         }
     }
 
@@ -120,13 +112,13 @@ Vue.component('task-card', {
             <p v-if="!isEditing">{{ task.description }}</p>
             <textarea v-else v-model="newDescription" />
             <p>Deadline: {{ task.deadline }}</p>
-            <p v-if="allowStatus">Status : {{ checkDeadline() }}</p>
             <p>Last change: {{ task.lastEdited }}</p>
-            <button v-if="allowMove" @click="moveToNextColumn">Move to next column</button>
-            <button v-if="allowReturn" @click="returnTaskToFirstColumn">Return task</button>
+            <p v-if="allowStatus">Status : {{ checkDeadline() }}</p>
+            <button v-if="allowMove && !isEditing" @click="moveToNextColumn">Move to next column</button>
+            <button v-if="allowReturn && !isEditing" @click="returnTaskToSecondColumn">Return task</button>
             <button v-if="allowEdit && !isEditing" @click="startEditing">Edit task</button>
             <button v-if="isEditing" @click="saveEdit">Save edit</button>
-            <button v-if="allowDel" @click="deleteTask">Delete task</button>
+            <button v-if="allowDel && !isEditing" @click="deleteTask">Delete task</button>
         </div>
     `,
     data() {
@@ -151,14 +143,8 @@ Vue.component('task-card', {
             this.task.lastEdited = new Date();
             this.isEditing = false;
         },
-        editTask(){
-            this.task.title = 'New title'
-            this.task.description = 'New description'
-            this.task.lastEdited = new Date();
-            this.$emit('back-to-progress', {task: this.task, targetColumn: backToProgress(this.task.column)})
-        },
-        returnTaskToFirstColumn(){
-            this.$emit('return', {task: this.task, targetColumn: returnInFirstColumn(this.task.column)})
+        returnTaskToSecondColumn(){
+            this.$emit('return', {task: this.task, targetColumn: returnInSecondColumn(this.task.column)})
         },
         deleteTask(){
             this.$emit('delete', this.task)
@@ -175,13 +161,13 @@ Vue.component('task-card', {
     },
     computed:{
         allowEdit(){
-            return this.task.column === 'testingTasks';
+            return this.task.column === 'plannedTasks' || this.task.column === 'inProgressTasks' || this.task.column === 'testingTasks';
         },
         allowMove(){
             return this.task.column === 'plannedTasks' || this.task.column === 'inProgressTasks' || this.task.column === 'testingTasks';
         },
         allowReturn(){
-            return this.task.column === 'completedTasks';
+            return this.task.column === 'testingTasks';
         },
         allowDel(){
             return this.task.column === 'plannedTasks'
@@ -208,14 +194,7 @@ function getNextColumn(currentColumn) {
     }
 }
 
-function returnInFirstColumn(currentColumn){
-    switch (currentColumn){
-        case 'completedTasks':
-            return 'plannedTasks';
-    }
-}
-
-function backToProgress(currentColumn){
+function returnInSecondColumn(currentColumn){
     switch (currentColumn){
         case 'testingTasks':
             return 'inProgressTasks';
