@@ -34,6 +34,9 @@
     flex-direction: column;
     justify-content: space-around;
 }
+.task-card > p > ul{
+    margin: 0;
+}
 .task-card > h3{
     margin: 0;
 }

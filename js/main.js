@@ -116,7 +116,12 @@ Vue.component('task-card', {
             <input v-if="isReturning" type="text" v-model="returnReason" placeholder="Причина возврата" />
             <p>Дедлайн: {{ formatDate(task.deadline) }}</p>
             <p>Последнее изменение: {{ formatDate(task.lastEdited) }}</p>
-            <p v-if="task.returnReason">Причина возврата: {{ task.returnReason }}</p>
+            <p v-if="task.returnReasons && task.returnReasons.length > 0">
+                Причины возврата:
+                <ul>
+                    <li v-for="reason in task.returnReasons" :key="reason">{{ reason }}</li>
+                </ul>
+            </p>
             <p v-if="allowStatus">Статус : {{ checkDeadline() }}</p>
             <div class="buttons">
                 <button v-if="isReturning" @click="saveReturnReason">Сохранить причину возврата</button>
@@ -156,10 +161,15 @@ Vue.component('task-card', {
             this.isReturning = true;
         },
         saveReturnReason() {
-            this.$emit('return', {task: this.task, targetColumn: this.returnInSecondColumn(this.task.column), returnReason: this.returnReason});
-            this.task.returnReason = this.returnReason;
-            this.isReturning = false;
-            this.returnReason = '';
+            if (!this.task.returnReasons) {
+                this.task.returnReasons = [];
+            }
+            if (this.returnReason) {
+                this.task.returnReasons.push(this.returnReason);
+                this.$emit('return', { task: this.task, targetColumn: this.returnInSecondColumn(this.task.column), returnReason: this.returnReason });
+                this.returnReason = '';
+                this.isReturning = false;
+            }
         },
         deleteTask(){
             this.$emit('delete', this.task)
