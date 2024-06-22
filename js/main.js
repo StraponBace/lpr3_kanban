@@ -22,22 +22,47 @@ Vue.component('kanban', {
     methods: {
         createTask(task) {
             this.plannedTasks.push(task);
+            this.saveTasks();
         },
         moveTask({task, targetColumn}) {
             this[task.column].splice(this[task.column].indexOf(task), 1);
             this[targetColumn].push({...task, column: targetColumn, lastEdited: new Date()});
+            this.saveTasks();
         },
         returnTask({task, targetColumn, returnReason}){
             this[task.column].splice(this[task.column].indexOf(task), 1);
             this[targetColumn].push({...task, column: targetColumn, lastEdited: new Date(), returnReason: returnReason});
+            this.saveTasks();
         },
         deleteTask(task){
             const index = this[task.column].findIndex(t => t === task);
             if (index !== -1) {
                 this[task.column].splice(index, 1);
             }
+            this.saveTasks();
+        },
+        saveTasks() {
+            const tasks = {
+                plannedTasks: this.plannedTasks,
+                inProgressTasks: this.inProgressTasks,
+                testingTasks: this.testingTasks,
+                completedTasks: this.completedTasks
+            };
+            localStorage.setItem('kanbanTasks', JSON.stringify(tasks));
+        },
+        loadTasks() {
+            const tasks = localStorage.getItem('kanbanTasks');
+            if (tasks) {
+                const parsedTasks = JSON.parse(tasks);
+                this.plannedTasks = parsedTasks.plannedTasks || [];
+                this.inProgressTasks = parsedTasks.inProgressTasks || [];
+                this.testingTasks = parsedTasks.testingTasks || [];
+                this.completedTasks = parsedTasks.completedTasks || [];
+            }
         }
-
+    },
+    created() {
+        this.loadTasks();
     }
 })
 
@@ -49,8 +74,9 @@ Vue.component('create-task-form', {
             <textarea v-model="description" placeholder="Описание"></textarea>
             <label for="deadline">Дедлайн:</label>
             <input type="date" v-model="deadline">
+            <h4 v-if="notUniqueTitle(title)">Задача с таким заголовком уже существует</h4>
             <h4 v-if="title == '' || description == '' || deadline ==''">Для создания задачи заполните все поля</h4>
-            <button @click="createTask" v-if="title !== '' && description !== '' && deadline !==''">Создать</button>
+            <button @click="createTask" v-if="title !== '' && description !== '' && deadline !=='' && !notUniqueTitle(title)">Создать</button>
         </div>
    `,
     data() {
@@ -61,6 +87,16 @@ Vue.component('create-task-form', {
         }
     },
     methods: {
+        notUniqueTitle(title) {
+            const allTasks = [
+                ...this.$parent.plannedTasks,
+                ...this.$parent.inProgressTasks,
+                ...this.$parent.testingTasks,
+                ...this.$parent.completedTasks
+            ];
+
+            return allTasks.some(task => task.title === title);
+        },
         createTask() {
             const newTask = {
                 title: this.title,
