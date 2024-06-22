@@ -114,8 +114,8 @@ Vue.component('task-card', {
             <p v-if="!isEditing">{{ task.description }}</p>
             <textarea v-else v-model="newDescription" />
             <input v-if="isReturning" type="text" v-model="returnReason" placeholder="Причина возврата" />
-            <p>Дедлайн: {{ task.deadline }}</p>
-            <p>Последнее изменение: {{ task.lastEdited }}</p>
+            <p>Дедлайн: {{ formatDate(task.deadline) }}</p>
+            <p>Последнее изменение: {{ formatDate(task.lastEdited) }}</p>
             <p v-if="task.returnReason">Причина возврата: {{ task.returnReason }}</p>
             <p v-if="allowStatus">Статус : {{ checkDeadline() }}</p>
             <div class="buttons">
@@ -134,13 +134,12 @@ Vue.component('task-card', {
             newTitle: '',
             newDescription: '',
             isReturning: false,
-            returnReason: '',
-            returnReasonDisplay: ''
+            returnReason: ''
         }
     },
     methods: {
         moveToNextColumn() {
-            this.$emit('move', {task: this.task, targetColumn: getNextColumn(this.task.column)})
+            this.$emit('move', {task: this.task, targetColumn: this.getNextColumn(this.task.column)})
         },
         startEditing() {
             this.isEditing = true;
@@ -157,9 +156,10 @@ Vue.component('task-card', {
             this.isReturning = true;
         },
         saveReturnReason() {
-            this.$emit('return', {task: this.task, targetColumn: returnInSecondColumn(this.task.column), returnReason: this.returnReason});
+            this.$emit('return', {task: this.task, targetColumn: this.returnInSecondColumn(this.task.column), returnReason: this.returnReason});
             this.task.returnReason = this.returnReason;
             this.isReturning = false;
+            this.returnReason = '';
         },
         deleteTask(){
             this.$emit('delete', this.task)
@@ -168,10 +168,17 @@ Vue.component('task-card', {
             const deadline = new Date(this.task.deadline);
             const now = new Date();
             if(now > deadline){
-                return this.task.status = 'Просрочено';
+                return 'Просрочено';
             }else{
-                return this.task.status = 'Выполнено в срок';
+                return 'Выполнено в срок';
             }
+        },
+        formatDate(date) {
+            const d = new Date(date);
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const year = d.getFullYear();
+            return `${day}.${month}.${year}`;
         },
         getNextColumn(currentColumn) {
             switch (currentColumn) {
@@ -201,7 +208,7 @@ Vue.component('task-card', {
             return this.task.column === 'testingTasks';
         },
         allowDel(){
-            return this.task.column === 'plannedTasks'
+            return this.task.column === 'plannedTasks';
         },
         allowStatus(){
             return this.task.column === 'completedTasks';
