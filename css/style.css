@@ -11,22 +11,48 @@
 }
 .task-form{
     background-color: #EBCFB2;
-    border-radius: 5%;
-    padding: 0.25em;
+    border-radius: 2%;
+    padding: 0.5em;
+    width: 20em;
+}
+.task-form > h2{
+    text-align: center;
+}
+.task-form > textarea{
+    height: 5em;
+}
+.task-form > h4{
+    text-align: center;
 }
 .task-card{
-    width: 25em;
+    width: 20em;
     background-color: #C5BAAF;
     border-radius: 2%;
-    padding: 0.25em;
+    padding: 0.5em;
+    gap: 0.5em;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+.task-card > h3{
+    margin: 0;
+}
+.task-card > p{
+    margin: 0;
 }
 .columns{
     display: flex;
     justify-content: space-between;
-    width: 95vw;
+    width: 95rem;
 }
 .tasks{
     gap: 1em;
     display: flex;
     flex-direction: column;
+}
+.buttons{
+    display: flex;
+    flex-direction: row;
+    gap: 0.5em;
+    flex-wrap: wrap;
 }
