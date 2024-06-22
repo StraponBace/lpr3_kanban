@@ -37,7 +37,6 @@ Vue.component('kanban', {
                 this[task.column].splice(index, 1);
             }
         }
-        }
 
     }
 })
@@ -87,7 +86,6 @@ Vue.component('column', {
             <div class="column">
                 <h2>{{ title }}</h2>
                 <div class="tasks">
-                    <task-card v-for="task in tasks" :key="task.id" :task="task" @move="moveTask" @return="returnTask" @delete="deleteTask"></task-card>
                     <task-card v-for="task in tasks" :key="task.id" :task="task" @move="moveTask" @return="returnTask" @delete="deleteTask"></task-card>
                 </div>
             </div>
@@ -151,14 +149,6 @@ Vue.component('task-card', {
         saveEdit() {
             this.task.title = this.newTitle;
             this.task.description = this.newDescription;
-        startEditing() {
-            this.isEditing = true;
-            this.newTitle = this.task.title;
-            this.newDescription = this.task.description;
-        },
-        saveEdit() {
-            this.task.title = this.newTitle;
-            this.task.description = this.newDescription;
             this.task.lastEdited = new Date();
             this.isEditing = false;
         },
@@ -210,13 +200,11 @@ Vue.component('task-card', {
     computed:{
         allowEdit(){
             return this.task.column === 'plannedTasks' || this.task.column === 'inProgressTasks' || this.task.column === 'testingTasks';
-            return this.task.column === 'plannedTasks' || this.task.column === 'inProgressTasks' || this.task.column === 'testingTasks';
         },
         allowMove(){
             return this.task.column === 'plannedTasks' || this.task.column === 'inProgressTasks' || this.task.column === 'testingTasks';
         },
         allowReturn(){
-            return this.task.column === 'testingTasks';
             return this.task.column === 'testingTasks';
         },
         allowDel(){
