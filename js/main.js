@@ -164,8 +164,9 @@ Vue.component('task-card', {
                 <button v-if="allowMove && !isEditing && !isReturning" @click="moveToNextColumn">Переместить дальше</button>
                 <button v-if="allowReturn && !isEditing && !isReturning" @click="returnTaskToSecondColumn">Вернуть задачу</button>
                 <button v-if="allowEdit && !isEditing && !isReturning" @click="startEditing">Редактировать задачу</button>
-                <button v-if="isEditing && !isReturning" @click="saveEdit">Сохранить изменения</button>
+                <button v-if="isEditing && !isReturning && !notUniqueTitle(newTitle)" @click="saveEdit">Сохранить изменения</button>
                 <button v-if="allowDel && !isEditing && !isReturning" @click="deleteTask">Удалить задачу</button>
+                <h4 v-if="notUniqueTitle(newTitle)">Задача с таким заголовком уже существует</h4>
             </div>
         </div>
     `,
@@ -186,6 +187,16 @@ Vue.component('task-card', {
             this.isEditing = true;
             this.newTitle = this.task.title;
             this.newDescription = this.task.description;
+        },
+        notUniqueTitle(newTitle) {
+            const allTasks = [
+                ...this.$parent.$parent.plannedTasks,
+                ...this.$parent.$parent.inProgressTasks,
+                ...this.$parent.$parent.testingTasks,
+                ...this.$parent.$parent.completedTasks
+            ];
+
+            return allTasks.some(task => task.title === newTitle && task !== this.task);
         },
         saveEdit() {
             this.task.title = this.newTitle;
@@ -213,6 +224,7 @@ Vue.component('task-card', {
         checkDeadline(){
             const deadline = new Date(this.task.deadline);
             const now = new Date();
+            now.setDate(now.getDate() - 1);
             if(now > deadline){
                 return 'Просрочено';
             }else{
