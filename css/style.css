@@ -2,10 +2,10 @@
     margin: 0;
     padding: 0;
 }
-body{
-    /* background-color: #071C71;
-    color: white; */
-}
+/* body{
+    background-color: #071C71;
+    color: white;
+} */
 .task-form{
     display: flex;
     flex-direction: column;
@@ -45,7 +45,10 @@ body{
     justify-content: space-around;
 }
 .task-card > p > ul{
-    margin: 0;
+    margin-left: 1.5em;
+}
+ol> li{
+    margin-left: 1.5em;
 }
 .task-card > h3{
     margin: 0;
@@ -63,6 +66,7 @@ body{
     width: 20em;
 }
 .tasks{
+    margin-top: 1em;
     gap: 1em;
     display: flex;
     flex-direction: column;
@@ -77,4 +81,7 @@ button{
     /* background-color: #6F83D6;
     color: white; */
     padding: 0.2em;
+}
+.completed {
+    text-decoration: line-through;
 }
